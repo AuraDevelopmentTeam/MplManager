@@ -1,1 +1,1 @@
-include "GradleCommon"
+include "GradleCommon", "common", "sponge", "spigot"

@@ -1,9 +1,26 @@
 apply from: "GradleCommon/common.gradle"
 
+allprojects {
+    repositories {
+        maven {
+            name "mikroskeem"
+            url "https://repo.wut.ee/repository/mikroskeem-repo"
+        }
+    }
+}
+
 repositories {
     // Additional repositories
 }
 
 dependencies {
-    // Additional dependencies
+    shadow(project(":sponge")) {
+        exclude module: "lombok"
+        exclude module: "spongeapi"
+    }
+
+    shadow(project(":spigot")) {
+        exclude module: "lombok"
+        exclude module: "spigot-api"
+    }
 }
