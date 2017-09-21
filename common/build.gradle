@@ -7,5 +7,5 @@ repositories {
 dependencies {
     shadowRelocate "eu.mikroskeem:picomaven:${picomaven_version}"
     
-    compileOnly "de.adrodoc55.mpl:mpl-compiler:${MPL_version}"
+    compile "de.adrodoc55.mpl:mpl-compiler:${MPL_version}"
 }

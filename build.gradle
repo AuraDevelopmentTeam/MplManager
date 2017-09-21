@@ -17,13 +17,15 @@ repositories {
 }
 
 dependencies {
-    shadow(project(":sponge")) {
-        exclude module: "lombok"
-        exclude module: "spongeapi"
+    shadow(project(":common")) {
+        transitive false
     }
 
     shadow(project(":spigot")) {
-        exclude module: "lombok"
-        exclude module: "spigot-api"
+        transitive false
+    }
+
+    shadow(project(":sponge")) {
+        transitive false
     }
 }
