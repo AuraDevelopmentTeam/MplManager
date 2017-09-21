@@ -18,7 +18,7 @@ public class Dependencies {
 	public static final URI MAVEN_CENTRAL = URI.create("https://repo.maven.apache.org/maven2");
 	public static final URI CINDYCATS = URI.create("http://basket.cindyscats.com/content/repositories/releases");
 
-	public static final DependencyJar MPL = new DependencyJar("", "", "");
+	public static final DependencyJar MPL_COMPILER = new DependencyJar("de.adrodoc55.mpl", "mpl-compiler", "1.3.2");
 
 	public static void loadDependencyJars(List<DependencyJar> dependencies) {
 		dependencies.stream().map(DependencyJar::getDependencies).forEach(Dependencies::loadDependencies);
