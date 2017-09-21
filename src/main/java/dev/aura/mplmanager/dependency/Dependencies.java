@@ -18,8 +18,9 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Dependencies {
-	public static final URI MAVEN_CENTRAL = URI.create("https://repo.maven.apache.org/maven2");
-	public static final URI CINDYCATS = URI.create("http://basket.cindyscats.com/content/repositories/releases");
+	protected static final URI REPO_MAVEN_CENTRAL = URI.create("https://repo.maven.apache.org/maven2");
+	protected static final URI REPO_CINDYCATS = URI
+			.create("http://basket.cindyscats.com/content/repositories/releases");
 
 	protected static final DependencyJar DEP_COMMONS_IO = new DependencyJar("commons-io", "commons-io", "2.4");
 	protected static final DependencyJar DEP_NBT = new DependencyJar("com.evilco.mc", "nbt", "1.0.2", DEP_COMMONS_IO);
@@ -39,7 +40,7 @@ public class Dependencies {
 
 	public static void loadDependencies(List<Dependency> dependencies) {
 		PicoMaven picoMaven = new PicoMaven.Builder().withDebugLoggerImpl(Dependencies::logDownload)
-				.withRepositories(Arrays.asList(MAVEN_CENTRAL, CINDYCATS))
+				.withRepositories(Arrays.asList(REPO_MAVEN_CENTRAL, REPO_CINDYCATS))
 				.withDownloadPath(MplManager.getInstance().getLibsDir().toPath()).withDependencies(dependencies)
 				.withDownloaderCallbacks(new DownLoaderCallback()).build();
 
@@ -60,15 +61,15 @@ public class Dependencies {
 		addURL(path.toUri().toURL());
 	}
 
-	private static void addURL(URL u) throws IOException {
+	private static void addURL(URL url) throws IOException {
 		URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 		Class<URLClassLoader> sysclass = URLClassLoader.class;
 
 		try {
 			Method method = sysclass.getDeclaredMethod("addURL", new Class[] { URL.class });
 			method.setAccessible(true);
-			method.invoke(sysloader, new Object[] { u });
-		} catch (Throwable t) {
+			method.invoke(sysloader, new Object[] { url });
+		} catch (Exception t) {
 			throw new IOException("Error, could not add URL to system classloader", t);
 		}
 	}

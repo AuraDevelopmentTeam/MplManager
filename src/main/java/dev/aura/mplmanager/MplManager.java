@@ -104,7 +104,7 @@ public class MplManager {
 	}
 
 	private void loadDynamicDependencies() {
-		Dependencies.loadDependencyJars(instance.getStaticDependencies());
+		Dependencies.loadDependencyJars(instance.getDynamicDependencies());
 	}
 
 	private void initDirs() {
