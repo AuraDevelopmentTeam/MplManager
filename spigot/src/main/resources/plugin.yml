@@ -1,6 +1,0 @@
-name: ${name}
-id: ${id}
-main: dev.aura.mplmanager.spigot.MplManagerMainSpigot
-version: ${version}
-author: BrainStone
-description: ${description}

@@ -13,19 +13,17 @@ allprojects {
 }
 
 repositories {
-    // Additional repositories
+    maven {
+        name "mikroskeem"
+        url "https://repo.wut.ee/repository/mikroskeem-repo"
+    }
+    maven {
+        url "http://basket.cindyscats.com/content/repositories/releases"
+    }
 }
 
 dependencies {
-    shadow(project(":common")) {
-        transitive false
-    }
-
-    shadow(project(":spigot")) {
-        transitive false
-    }
-
-    shadow(project(":sponge")) {
-        transitive false
-    }
+    shadowRelocate "eu.mikroskeem:picomaven:${picomaven_version}"
+    
+    compile "de.adrodoc55.mpl:mpl-compiler:${MPL_version}"
 }

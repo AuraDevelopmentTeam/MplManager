@@ -1,4 +1,4 @@
-package dev.aura.mplmanager.common.dependency;
+package dev.aura.mplmanager.dependency;
 
 import java.util.LinkedList;
 import java.util.List;

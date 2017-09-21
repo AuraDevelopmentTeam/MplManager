@@ -1,4 +1,4 @@
-package dev.aura.mplmanager.common.dependency;
+package dev.aura.mplmanager.dependency;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
