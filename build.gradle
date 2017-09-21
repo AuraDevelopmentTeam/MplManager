@@ -6,6 +6,9 @@ allprojects {
             name "mikroskeem"
             url "https://repo.wut.ee/repository/mikroskeem-repo"
         }
+        maven {
+            url "http://basket.cindyscats.com/content/repositories/releases"
+        }
     }
 }
 
