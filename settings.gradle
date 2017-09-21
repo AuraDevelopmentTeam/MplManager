@@ -1,1 +1,3 @@
 include "GradleCommon", "common", "sponge", "spigot"
+
+rootProject.name = "MplManager"
