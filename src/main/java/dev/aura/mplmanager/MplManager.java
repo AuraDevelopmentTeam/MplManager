@@ -4,7 +4,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -27,7 +29,7 @@ public class MplManager {
 	public static final String DESCRIPTION = "@description@";
 	public static final String URL = "https://github.com/AuraDevelopmentTeam/MplManager";
 	public static final String AUTHOR_BRAINSTONE = "The_BrainStone";
-	
+
 	public static final String LIBS = "libs";
 	public static final String SCRIPTS = "scripts";
 
@@ -40,11 +42,20 @@ public class MplManager {
 	@NonNull
 	@Getter
 	private File configDir;
+	@Inject
+	@DefaultConfig(sharedRoot = false)
+	@NonNull
+	@Getter
+	protected File configFile;
+	@Inject
+	@NonNull
+	@Getter
+	protected Logger logger;
 
 	public MplManager() {
 		MplManager.setInstance(this);
 	}
-	
+
 	public File getLibsDir() {
 		return new File(getConfigDir(), LIBS);
 	}
@@ -54,7 +65,7 @@ public class MplManager {
 	}
 
 	public List<DependencyJar> getStaticDependencies() {
-		return Arrays.asList(Dependencies.MPL_COMPILER);
+		return Arrays.asList(Dependencies.DEP_MPL_COMPILER);
 	}
 
 	public List<DependencyJar> getDynamicDependencies() {
@@ -70,9 +81,22 @@ public class MplManager {
 
 	@Listener
 	public void init(GameInitializationEvent event) {
+		logger.info("Initializing " + NAME + " Version " + VERSION);
+
+		if (VERSION.contains("SNAPSHOT")) {
+			logger.warn("WARNING! This is a snapshot version!");
+			logger.warn("Use at your own risk!");
+		}
+		if (VERSION.contains("DEV")) {
+			logger.info("This is a unreleased development version!");
+			logger.info("Things might not work properly!");
+		}
+
 		loadConfig();
 
 		loadDynamicDependencies();
+
+		logger.info("Loaded successfully!");
 	}
 
 	private void loadStaticDependencies() {
