@@ -3,22 +3,25 @@ package dev.aura.mplmanager;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 import com.google.inject.Inject;
 
+import dev.aura.mplmanager.config.Config;
 import dev.aura.mplmanager.dependency.Dependencies;
 import dev.aura.mplmanager.dependency.DependencyJar;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 @Plugin(id = MplManager.ID, name = MplManager.NAME, version = MplManager.VERSION, description = MplManager.DESCRIPTION, url = MplManager.URL, authors = {
 		MplManager.AUTHOR_BRAINSTONE })
@@ -33,7 +36,6 @@ public class MplManager {
 	public static final String LIBS = "libs";
 	public static final String SCRIPTS = "scripts";
 
-	@Setter
 	@Getter
 	private static MplManager instance;
 
@@ -51,9 +53,20 @@ public class MplManager {
 	@NonNull
 	@Getter
 	protected Logger logger;
+	@NonNull
+	@Getter
+	protected Config config;
+
+	protected static <T> void callSafely(T object, Consumer<T> method) {
+		if (object != null) {
+			method.accept(object);
+		}
+	}
 
 	public MplManager() {
-		MplManager.setInstance(this);
+		assert instance == null;
+
+		instance = this;
 	}
 
 	public File getLibsDir() {
@@ -69,18 +82,29 @@ public class MplManager {
 	}
 
 	public List<DependencyJar> getDynamicDependencies() {
-		return Arrays.asList();
+		if (config.getFtpSection().isEnabled())
+			return Arrays.asList(Dependencies.DEP_FTPSERVER_CORE);
+		else
+			return Arrays.asList();
 	}
 
 	@Listener
-	public void gameConstruct(GameConstructionEvent event) {
+	public void onConstruct(GameConstructionEvent event) {
+		onConstruct();
+	}
+
+	public void onConstruct() {
 		initDirs();
 
 		loadStaticDependencies();
 	}
 
 	@Listener
-	public void init(GameInitializationEvent event) {
+	public void onInit(GameInitializationEvent event) {
+		onInit();
+	}
+
+	public void onInit() {
 		logger.info("Initializing " + NAME + " Version " + VERSION);
 
 		if (VERSION.contains("SNAPSHOT")) {
@@ -92,11 +116,38 @@ public class MplManager {
 			logger.info("Things might not work properly!");
 		}
 
-		loadConfig();
+		config = new Config(this, configFile.toPath());
+		config.load();
 
 		loadDynamicDependencies();
 
 		logger.info("Loaded successfully!");
+	}
+
+	@Listener
+	public void onReload(GameReloadEvent event) {
+		// Unregistering everything
+		onStopping();
+
+		// Starting over
+		onConstruct();
+		onInit();
+
+		logger.info("Reloaded successfully!");
+	}
+
+	@Listener
+	public void onStopping(GameStoppingEvent event) {
+		onStopping();
+	}
+
+	public void onStopping() {
+		logger.info("Shutting down " + NAME + " Version " + VERSION);
+
+		callSafely(config, Config::save);
+		config = null;
+
+		logger.info("Unloaded successfully!");
 	}
 
 	private void loadStaticDependencies() {
@@ -111,9 +162,5 @@ public class MplManager {
 		getConfigDir().mkdirs();
 		getLibsDir().mkdirs();
 		getScriptsDir().mkdirs();
-	}
-
-	private void loadConfig() {
-		// Nothing yet
 	}
 }
