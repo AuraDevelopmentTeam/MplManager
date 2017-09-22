@@ -63,10 +63,10 @@ public class Config {
 		}
 
 		ftpSection = new SectionFTP(rootNode.getNode(SectionFTP.SECTION_KEY));
-		
-		save();
 
 		logger.debug("Config loaded!");
+
+		save();
 	}
 
 	public void save() {

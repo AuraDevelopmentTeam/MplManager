@@ -14,6 +14,7 @@ import dev.aura.mplmanager.MplManager;
 import eu.mikroskeem.picomaven.Dependency;
 import eu.mikroskeem.picomaven.DownloaderCallbacks;
 import eu.mikroskeem.picomaven.PicoMaven;
+import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -35,6 +36,21 @@ public class Dependencies {
 	public static final DependencyJar DEP_FTPSERVER_CORE = new DependencyJar("org.apache.ftpserver", "ftpserver-core",
 			"1.0.6", DEP_FTPLET_API, DEP_MINA_CORE);
 
+	private static final Method ADD_URL_METHOD;
+
+	static {
+		Method addUrlMethod = null;
+
+		try {
+			addUrlMethod = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+			addUrlMethod.setAccessible(true);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
+
+		ADD_URL_METHOD = addUrlMethod;
+	}
+
 	public static void loadDependencyJars(List<DependencyJar> dependencyJars) {
 		List<Dependency> dependencies = new LinkedList<>();
 
@@ -44,6 +60,7 @@ public class Dependencies {
 	}
 
 	public static void loadDependencies(List<Dependency> dependencies) {
+		@Cleanup
 		PicoMaven picoMaven = new PicoMaven.Builder().withDebugLoggerImpl(Dependencies::logDownload)
 				.withRepositories(Arrays.asList(REPO_MAVEN_CENTRAL, REPO_CINDYCATS))
 				.withDownloadPath(MplManager.getInstance().getLibsDir().toPath()).withDependencies(dependencies)
@@ -67,15 +84,17 @@ public class Dependencies {
 	}
 
 	private static void addURL(URL url) throws IOException {
-		URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-		Class<URLClassLoader> sysclass = URLClassLoader.class;
+		ClassLoader classLoader = MplManager.getInstance().getClass().getClassLoader();
+
+		if (!(classLoader instanceof URLClassLoader))
+			throw new RuntimeException("Unknown classloader: " + classLoader.getClass());
+
+		MplManager.getInstance().getLogger().debug("Adding URL \"" + url + "\" to plugin classloader");
 
 		try {
-			Method method = sysclass.getDeclaredMethod("addURL", new Class[] { URL.class });
-			method.setAccessible(true);
-			method.invoke(sysloader, new Object[] { url });
-		} catch (Exception t) {
-			throw new IOException("Error, could not add URL to system classloader", t);
+			ADD_URL_METHOD.invoke(classLoader, url);
+		} catch (Exception e) {
+			throw new IOException("Error, could not add URL \"" + url + "\" to plugin classloader", e);
 		}
 	}
 

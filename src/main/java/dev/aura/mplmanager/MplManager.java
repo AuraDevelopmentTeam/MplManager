@@ -20,6 +20,7 @@ import com.google.inject.Inject;
 import dev.aura.mplmanager.config.Config;
 import dev.aura.mplmanager.dependency.Dependencies;
 import dev.aura.mplmanager.dependency.DependencyJar;
+import dev.aura.mplmanager.ftp.FtpServerManager;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -56,6 +57,7 @@ public class MplManager {
 	@NonNull
 	@Getter
 	protected Config config;
+	protected FtpServerManager ftpServerManager;
 
 	protected static <T> void callSafely(T object, Consumer<T> method) {
 		if (object != null) {
@@ -121,6 +123,11 @@ public class MplManager {
 
 		loadDynamicDependencies();
 
+		if (config.getFtpSection().isEnabled()) {
+			ftpServerManager = new FtpServerManager(config.getFtpSection(), getScriptsDir());
+			ftpServerManager.start();
+		}
+
 		logger.info("Loaded successfully!");
 	}
 
@@ -144,7 +151,11 @@ public class MplManager {
 	public void onStopping() {
 		logger.info("Shutting down " + NAME + " Version " + VERSION);
 
-		callSafely(config, Config::save);
+		if (config.getFtpSection().isEnabled()) {
+			callSafely(ftpServerManager, FtpServerManager::stop);
+			ftpServerManager = null;
+		}
+
 		config = null;
 
 		logger.info("Unloaded successfully!");
