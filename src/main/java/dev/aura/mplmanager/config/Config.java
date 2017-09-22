@@ -83,21 +83,24 @@ public class Config {
 
 	@Data
 	public class SectionFTP {
-		public static final String SECTION_KEY = "ftp";
+		private static final String SECTION_KEY = "ftp";
 
-		public static final String KEY_ENABLED = "enabled";
-		public static final String KEY_HOST = "host";
-		public static final String KEY_PORT = "port";
-		public static final String KEY_USERS = "users";
+		private static final String KEY_ENABLED = "enabled";
+		private static final String KEY_HOST = "host";
+		private static final String KEY_LOGGING = "logging";
+		private static final String KEY_PORT = "port";
+		private static final String KEY_USERS = "users";
 
 		private boolean enabled;
 		private String host;
+		private boolean logging;
 		private int port;
 		private Map<String, String> users;
 
 		public SectionFTP(ConfigurationNode node) {
 			enabled = node.getNode(KEY_ENABLED).getBoolean(false);
 			host = node.getNode(KEY_HOST).getString("0.0.0.0");
+			logging = node.getNode(KEY_LOGGING).getBoolean(false);
 			port = node.getNode(KEY_PORT).getInt(2121);
 			users = node.getNode(KEY_USERS).getChildrenMap().entrySet().stream()
 					.collect(Collectors.toMap(set -> set.getKey().toString(), set -> set.getValue().getString()));
@@ -106,6 +109,7 @@ public class Config {
 		public void saveToNode(ConfigurationNode node) {
 			node.getNode(KEY_ENABLED).setValue(enabled);
 			node.getNode(KEY_HOST).setValue(host);
+			node.getNode(KEY_LOGGING).setValue(logging);
 			node.getNode(KEY_PORT).setValue(port);
 			node.getNode(KEY_USERS).setValue(users);
 		}
