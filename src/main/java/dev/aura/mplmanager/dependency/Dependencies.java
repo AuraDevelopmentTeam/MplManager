@@ -26,9 +26,14 @@ public class Dependencies {
 	protected static final DependencyJar DEP_NBT = new DependencyJar("com.evilco.mc", "nbt", "1.0.2", DEP_COMMONS_IO);
 	protected static final DependencyJar DEP_JCOMMANDER = new DependencyJar("com.beust", "jcommander", "1.58");
 	protected static final DependencyJar DEP_ANTLR4_RUNTIME = new DependencyJar("org.antlr", "antlr4-runtime", "4.5.3");
+	protected static final DependencyJar DEP_MINA_CORE = new DependencyJar("org.apache.mina", "mina-core", "2.0.4");
+	protected static final DependencyJar DEP_FTPLET_API = new DependencyJar("org.apache.ftpserver", "ftplet-api",
+			"1.0.6");
 
 	public static final DependencyJar DEP_MPL_COMPILER = new DependencyJar("de.adrodoc55.mpl", "mpl-compiler", "1.3.2",
 			DEP_ANTLR4_RUNTIME, DEP_JCOMMANDER, DEP_NBT);
+	public static final DependencyJar DEP_FTPSERVER_CORE = new DependencyJar("org.apache.ftpserver", "ftpserver-core",
+			"1.0.6", DEP_FTPLET_API, DEP_MINA_CORE);
 
 	public static void loadDependencyJars(List<DependencyJar> dependencyJars) {
 		List<Dependency> dependencies = new LinkedList<>();

@@ -26,4 +26,5 @@ dependencies {
     shadowRelocate "eu.mikroskeem:picomaven:${picomaven_version}"
     
     compile "de.adrodoc55.mpl:mpl-compiler:${MPL_version}"
+    compile "org.apache.ftpserver:ftpserver-core:1.0.6"
 }
