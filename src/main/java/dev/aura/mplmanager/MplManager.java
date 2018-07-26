@@ -1,10 +1,16 @@
 package dev.aura.mplmanager;
 
+import com.google.inject.Inject;
+import dev.aura.mplmanager.config.Config;
+import dev.aura.mplmanager.dependency.Dependencies;
+import dev.aura.mplmanager.dependency.DependencyJar;
+import dev.aura.mplmanager.ftp.FtpServerManager;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-
+import lombok.Getter;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
@@ -15,163 +21,154 @@ import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
 
-import com.google.inject.Inject;
-
-import dev.aura.mplmanager.config.Config;
-import dev.aura.mplmanager.dependency.Dependencies;
-import dev.aura.mplmanager.dependency.DependencyJar;
-import dev.aura.mplmanager.ftp.FtpServerManager;
-import lombok.Getter;
-import lombok.NonNull;
-
-@Plugin(id = MplManager.ID, name = MplManager.NAME, version = MplManager.VERSION, description = MplManager.DESCRIPTION, url = MplManager.URL, authors = {
-		MplManager.AUTHOR_BRAINSTONE })
+@Plugin(
+  id = MplManager.ID,
+  name = MplManager.NAME,
+  version = MplManager.VERSION,
+  description = MplManager.DESCRIPTION,
+  url = MplManager.URL,
+  authors = {MplManager.AUTHOR_BRAINSTONE}
+)
 public class MplManager {
-	public static final String ID = "@id@";
-	public static final String NAME = "@name@";
-	public static final String VERSION = "@version@";
-	public static final String DESCRIPTION = "@description@";
-	public static final String URL = "https://github.com/AuraDevelopmentTeam/MplManager";
-	public static final String AUTHOR_BRAINSTONE = "The_BrainStone";
+  public static final String ID = "@id@";
+  public static final String NAME = "@name@";
+  public static final String VERSION = "@version@";
+  public static final String DESCRIPTION = "@description@";
+  public static final String URL = "https://github.com/AuraDevelopmentTeam/MplManager";
+  public static final String AUTHOR_BRAINSTONE = "The_BrainStone";
 
-	public static final String LIBS = "libs";
-	public static final String SCRIPTS = "scripts";
+  public static final String LIBS = "libs";
+  public static final String SCRIPTS = "scripts";
 
-	@Getter
-	private static MplManager instance;
+  @Getter private static MplManager instance;
 
-	@Inject
-	@ConfigDir(sharedRoot = false)
-	@NonNull
-	@Getter
-	private File configDir;
-	@Inject
-	@DefaultConfig(sharedRoot = false)
-	@NonNull
-	@Getter
-	protected File configFile;
-	@Inject
-	@NonNull
-	@Getter
-	protected Logger logger;
-	@NonNull
-	@Getter
-	protected Config config;
-	protected FtpServerManager ftpServerManager;
+  @Inject
+  @ConfigDir(sharedRoot = false)
+  @NonNull
+  @Getter
+  private File configDir;
 
-	protected static <T> void callSafely(T object, Consumer<T> method) {
-		if (object != null) {
-			method.accept(object);
-		}
-	}
+  @Inject
+  @DefaultConfig(sharedRoot = false)
+  @NonNull
+  @Getter
+  protected File configFile;
 
-	public MplManager() {
-		assert instance == null;
+  @Inject @NonNull @Getter protected Logger logger;
+  @NonNull @Getter protected Config config;
+  protected FtpServerManager ftpServerManager;
 
-		instance = this;
-	}
+  protected static <T> void callSafely(T object, Consumer<T> method) {
+    if (object != null) {
+      method.accept(object);
+    }
+  }
 
-	public File getLibsDir() {
-		return new File(getConfigDir(), LIBS);
-	}
+  public MplManager() {
+    assert instance == null;
 
-	public File getScriptsDir() {
-		return new File(getConfigDir(), SCRIPTS);
-	}
+    instance = this;
+  }
 
-	public List<DependencyJar> getStaticDependencies() {
-		return Arrays.asList(Dependencies.DEP_MPL_COMPILER);
-	}
+  public File getLibsDir() {
+    return new File(getConfigDir(), LIBS);
+  }
 
-	public List<DependencyJar> getDynamicDependencies() {
-		if (config.getFtpSection().isEnabled())
-			return Arrays.asList(Dependencies.DEP_FTPSERVER_CORE);
-		else
-			return Arrays.asList();
-	}
+  public File getScriptsDir() {
+    return new File(getConfigDir(), SCRIPTS);
+  }
 
-	@Listener
-	public void onConstruct(GameConstructionEvent event) {
-		onConstruct();
-	}
+  public List<DependencyJar> getStaticDependencies() {
+    return Arrays.asList(Dependencies.DEP_MPL_COMPILER);
+  }
 
-	public void onConstruct() {
-		initDirs();
+  public List<DependencyJar> getDynamicDependencies() {
+    if (config.getFtpSection().isEnabled()) return Arrays.asList(Dependencies.DEP_FTPSERVER_CORE);
+    else return Arrays.asList();
+  }
 
-		loadStaticDependencies();
-	}
+  @Listener
+  public void onConstruct(GameConstructionEvent event) {
+    onConstruct();
+  }
 
-	@Listener
-	public void onInit(GameInitializationEvent event) {
-		onInit();
-	}
+  public void onConstruct() {
+    initDirs();
 
-	public void onInit() {
-		logger.info("Initializing " + NAME + " Version " + VERSION);
+    loadStaticDependencies();
+  }
 
-		if (VERSION.contains("SNAPSHOT")) {
-			logger.warn("WARNING! This is a snapshot version!");
-			logger.warn("Use at your own risk!");
-		}
-		if (VERSION.contains("DEV")) {
-			logger.info("This is a unreleased development version!");
-			logger.info("Things might not work properly!");
-		}
+  @Listener
+  public void onInit(GameInitializationEvent event) {
+    onInit();
+  }
 
-		config = new Config(this, configFile.toPath());
-		config.load();
+  public void onInit() {
+    logger.info("Initializing " + NAME + " Version " + VERSION);
 
-		loadDynamicDependencies();
+    if (VERSION.contains("SNAPSHOT")) {
+      logger.warn("WARNING! This is a snapshot version!");
+      logger.warn("Use at your own risk!");
+    }
+    if (VERSION.contains("DEV")) {
+      logger.info("This is a unreleased development version!");
+      logger.info("Things might not work properly!");
+    }
 
-		if (config.getFtpSection().isEnabled()) {
-			ftpServerManager = new FtpServerManager(config.getFtpSection(), getScriptsDir());
-			ftpServerManager.start();
-		}
+    config = new Config(this, configFile.toPath());
+    config.load();
 
-		logger.info("Loaded successfully!");
-	}
+    loadDynamicDependencies();
 
-	@Listener
-	public void onReload(GameReloadEvent event) {
-		// Unregistering everything
-		onStopping();
+    if (config.getFtpSection().isEnabled()) {
+      ftpServerManager = new FtpServerManager(config.getFtpSection(), getScriptsDir());
+      ftpServerManager.start();
+    }
 
-		// Starting over
-		onConstruct();
-		onInit();
+    logger.info("Loaded successfully!");
+  }
 
-		logger.info("Reloaded successfully!");
-	}
+  @Listener
+  public void onReload(GameReloadEvent event) {
+    // Unregistering everything
+    onStopping();
 
-	@Listener
-	public void onStopping(GameStoppingEvent event) {
-		onStopping();
-	}
+    // Starting over
+    onConstruct();
+    onInit();
 
-	public void onStopping() {
-		logger.info("Shutting down " + NAME + " Version " + VERSION);
+    logger.info("Reloaded successfully!");
+  }
 
-		if (config.getFtpSection().isEnabled()) {
-			callSafely(ftpServerManager, FtpServerManager::stop);
-			ftpServerManager = null;
-		}
+  @Listener
+  public void onStopping(GameStoppingEvent event) {
+    onStopping();
+  }
 
-		config = null;
+  public void onStopping() {
+    logger.info("Shutting down " + NAME + " Version " + VERSION);
 
-		logger.info("Unloaded successfully!");
-	}
+    if (config.getFtpSection().isEnabled()) {
+      callSafely(ftpServerManager, FtpServerManager::stop);
+      ftpServerManager = null;
+    }
 
-	private void loadStaticDependencies() {
-		Dependencies.loadDependencyJars(instance.getStaticDependencies());
-	}
+    config = null;
 
-	private void loadDynamicDependencies() {
-		Dependencies.loadDependencyJars(instance.getDynamicDependencies());
-	}
+    logger.info("Unloaded successfully!");
+  }
 
-	private void initDirs() {
-		getConfigDir().mkdirs();
-		getLibsDir().mkdirs();
-		getScriptsDir().mkdirs();
-	}
+  private void loadStaticDependencies() {
+    Dependencies.loadDependencyJars(instance.getStaticDependencies());
+  }
+
+  private void loadDynamicDependencies() {
+    Dependencies.loadDependencyJars(instance.getDynamicDependencies());
+  }
+
+  private void initDirs() {
+    getConfigDir().mkdirs();
+    getLibsDir().mkdirs();
+    getScriptsDir().mkdirs();
+  }
 }
