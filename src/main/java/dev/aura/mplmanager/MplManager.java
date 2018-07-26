@@ -6,6 +6,7 @@ import dev.aura.mplmanager.dependency.Dependencies;
 import dev.aura.mplmanager.dependency.DependencyJar;
 import dev.aura.mplmanager.ftp.FtpServerManager;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -64,6 +65,22 @@ public class MplManager {
     }
   }
 
+  private static void forceMkdirs(File directory) throws IOException {
+    if (directory.exists()) {
+      if (!directory.isDirectory()) {
+        throw new IOException(
+            "File "
+                + directory
+                + " exists and is "
+                + "not a directory. Unable to create directory.");
+      }
+    } else if (!directory.mkdirs()) {
+      if (!directory.isDirectory()) {
+        throw new IOException("Unable to create directory " + directory);
+      }
+    }
+  }
+
   public MplManager() {
     assert instance == null;
 
@@ -88,11 +105,11 @@ public class MplManager {
   }
 
   @Listener
-  public void onConstruct(GameConstructionEvent event) {
+  public void onConstruct(GameConstructionEvent event) throws IOException {
     onConstruct();
   }
 
-  public void onConstruct() {
+  public void onConstruct() throws IOException {
     initDirs();
 
     loadStaticDependencies();
@@ -129,7 +146,7 @@ public class MplManager {
   }
 
   @Listener
-  public void onReload(GameReloadEvent event) {
+  public void onReload(GameReloadEvent event) throws IOException {
     // Unregistering everything
     onStopping();
 
@@ -166,9 +183,9 @@ public class MplManager {
     Dependencies.loadDependencyJars(instance.getDynamicDependencies());
   }
 
-  private void initDirs() {
-    getConfigDir().mkdirs();
-    getLibsDir().mkdirs();
-    getScriptsDir().mkdirs();
+  private void initDirs() throws IOException {
+    forceMkdirs(getConfigDir());
+    forceMkdirs(getLibsDir());
+    forceMkdirs(getScriptsDir());
   }
 }

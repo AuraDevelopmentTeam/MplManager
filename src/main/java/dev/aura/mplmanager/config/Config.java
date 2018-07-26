@@ -41,7 +41,10 @@ public class Config {
             .getAsset(instance, configFile.getFileName().toString())
             .get()
             .copyToFile(configFile);
-      } catch (IOException | NoSuchElementException | IllegalStateException e) {
+      } catch (IOException
+          | NoSuchElementException
+          | NullPointerException
+          | IllegalStateException e) {
         logger.error("Could not load default config!", e);
 
         return;
@@ -78,7 +81,7 @@ public class Config {
   }
 
   @Data
-  public class SectionFTP {
+  public static class SectionFTP {
     private static final String SECTION_KEY = "ftp";
 
     private static final String KEY_ENABLED = "enabled";
